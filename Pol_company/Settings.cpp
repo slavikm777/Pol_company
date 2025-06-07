@@ -5,7 +5,7 @@ Settings* Settings::_instance_ptr = nullptr;
 
 Settings::Settings()
 {
-	_mainSettings.databaseName = L"clean_company_db1";
+	_mainSettings.databaseName = L"master_pol_db";
 	_mainSettings.userName = L"root";
 	_mainSettings.password = L"77777777";
 	_mainSettings.server = L"tcp://127.0.0.1:3306";

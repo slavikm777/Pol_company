@@ -7,15 +7,18 @@ class UIMainWindow : public MyWindow
 private:
 	enum EWidgetsID { // Идентификаторы элементов
 		BTN_SETTINGS = 100,
-		BTN_INFO = 200,
-		BTN_EXIT = 300,
-		BTN_STATUS = 400,
+		BTN_INFO,
+		BTN_EXIT,
+		BTN_STATUS,
+		BTN_LOGIN,
+		BTN_LOGOUT,
+		BTN_USERS
 	};
 
 	enum EFontsID // Идентификаторы шрифтов
 	{
-		FONT_ROBOTO1 = 101,
-		FONT_ROBOTO2 = 201
+		FONT_ROBOTO1 = 1001,
+		FONT_ROBOTO2
 	};
 
 	wstring RoleToText(eRole x)
@@ -37,6 +40,18 @@ private:
 		}
 	}
 
+	void LogOut()
+	{
+		int result = MessageBox(nullptr, L"Выйти?", L"Выход из учетной записи", MB_YESNO | MB_ICONQUESTION);
+		if (result == IDYES) {
+			_settings->_userSettings.login = L"";
+			_settings->_userSettings.password = L"";
+			_settings->_userSettings.role = eRole::ConnectedDB;
+			_settings->_userSettings.inLogin = false;
+			_settings->SaveSettings();
+		}
+	}
+
 public:
 
 	UIMainWindow(HINSTANCE hInstance, EWindowID prevWindow) : MyWindow(hInstance, prevWindow)
@@ -51,9 +66,26 @@ public:
 		Initialize();
 	}
 
+	virtual void Show(int nCmdShow)
+	{
+		if (_dataBase->Connect())
+		{
+			if (_settings->_userSettings.role == eRole::DisconnectDB)
+				_settings->_userSettings.role = eRole::ConnectedDB;
+			_dataBase->InLogin();
+		}
+		else
+		{
+			_settings->_userSettings.role = eRole::DisconnectDB;
+		}
+		UpdateWidgetsState();
+		MyWindow::Show(nCmdShow);
+	}
+
 protected:
 	virtual void Initialize() override
 	{
+		_dataBase->SetParentWindow(_hwnd);
 		AddFont(20, L"SegoeUI", FW_BOLD, true, false, FONT_ROBOTO1);
 		AddFont(15, L"SegoeUI", FW_BOLD, true, false, FONT_ROBOTO2);
 		MainWndAddMenues();
@@ -78,11 +110,14 @@ protected:
 	{
 		switch (menuId) {
 		case BTN_INFO:
-		{
 			MessageBoxW(_hwnd, L"Производственная компания «Мастер пол»", L"Инфо", MB_OK);
 			break;
-		}
-		case BTN_EXIT: Close(); break;
+		case BTN_EXIT: 
+			Close(); 
+			break;
+		case BTN_SETTINGS:
+			CreateOtherWindow(EUISettings, SColor::AdditionalColor()); // Переход в окно настроек
+			break;
 		}
 	}
 
@@ -90,6 +125,14 @@ protected:
 	{
 		CreateCustomButton(_hwnd, RoleToText(_settings->_userSettings.role), 750, 10, 250, 30, BTN_STATUS, 
 			SColor(240, 10, 10), SColor(), _fonts[FONT_ROBOTO2]);
+		CreateCustomButton(_hwnd, L"Авторизация", 800, 50, 180, 40, BTN_LOGIN, SColor(0, 240, 130), SColor(), _fonts[FONT_ROBOTO2]);
+		CreateCustomButton(_hwnd, L"Выйти", 800, 50, 180, 40, BTN_LOGOUT, SColor(255, 0, 130), SColor(), _fonts[FONT_ROBOTO2]);
+		CreateCustomButton(_hwnd, L"Авторизация пользователей", 370, 150, 320, 40, BTN_USERS, SColor(0, 240, 130), SColor(), _fonts[FONT_ROBOTO2], false);
+
+		SetWidgetPermissions(BTN_STATUS, WidgetState::Enabled, { eRole::Disabled });
+		SetWidgetPermissions(BTN_LOGIN, WidgetState::Visible, { eRole::ConnectedDB });
+		SetWidgetPermissions(BTN_LOGOUT, WidgetState::Visible, { eRole::Administrator, eRole::Analitic, eRole::Manager, eRole::Master });
+		SetWidgetPermissions(BTN_USERS, WidgetState::Visible, { eRole::Administrator });
 	}
 
 	virtual void UpdateWidgetsState() override
@@ -106,6 +149,22 @@ protected:
 			break;
 		}
 		GetCustomButton(BTN_STATUS)->SetText(RoleToText(_settings->_userSettings.role));
+	}
+
+	virtual void HandleButtonClick(int buttonId) override
+	{
+		switch (buttonId) {
+		case BTN_LOGIN:
+			CreateOtherWindow(EUILogin, SColor::AdditionalColor()); // Переход в окно авторизации
+			break;
+		case BTN_LOGOUT:
+			LogOut();
+			break;
+		case BTN_USERS:
+			CreateOtherWindow(EUILogin, SColor::AdditionalColor());
+			break;
+		}
+		UpdateWidgetsState();
 	}
 
 	bool IsMainWindow() const override { return true; }

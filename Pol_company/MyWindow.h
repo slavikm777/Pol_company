@@ -8,7 +8,7 @@
 #include "CoreTypes.h"
 #include "MyButton.h"
 #include "Settings.h"
-//#include "DataBase.h"
+#include "DBLayer.h"
 
 using namespace std;
 
@@ -78,7 +78,7 @@ protected:
 	map<int, HWND> _widgets; //Тут хранятся динамические и статические виджеты
 	map<int, MyButton*> _customButtons;
 	Settings* _settings = Settings::GetInstance(); //Сущность настроек
-	//DataBase* _dataBase = DataBase::GetInstance(); //Сущность прослойки БД
+	DataBase* _dataBase = DataBase::GetInstance(); //Сущность прослойки БД
 
 	HINSTANCE GetInstance() const { return _hInstance; }
 
