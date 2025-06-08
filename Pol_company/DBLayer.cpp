@@ -275,3 +275,108 @@ vector<string> DataBase::LoadTitle(string table, bool Debugging)
 	}
 	return tmp;
 }
+
+vector<string> DataBase::LoadPartners(string title, bool Debugging)
+{
+	vector<string> tmp;
+	string line;
+	if (title == "") 
+		_pstmt = _con->prepareStatement("SELECT _title, _rating FROM _partners ORDER BY id;");
+	else 
+	{
+		_pstmt = _con->prepareStatement("SELECT * FROM _partners WHERE id = ? ORDER BY id;");
+		_pstmt->setString(1, title);
+	}
+	_result = _pstmt->executeQuery();
+
+	while (_result->next())
+	{
+		if (title == "")
+			line = _result->getString(1) + WideToUTF8(L"  (Рейтинг - ") + _result->getString(2) + ")";
+		else
+			line = WideToUTF8(L"Название компании - ") + _result->getString(3) + "\r\n" +
+			WideToUTF8(L"Директор - ") + _result->getString(4) + "\r\n" +
+			WideToUTF8(L"@mail - ") + _result->getString(5) + "\r\n" +
+			WideToUTF8(L"Номер телефона - ") + _result->getString(6) + "\r\n" +
+			WideToUTF8(L"Адрес - ") + _result->getString(7) + "\r\n" +
+			WideToUTF8(L"ИНН - ") + _result->getString(8) + "\r\n" +
+			WideToUTF8(L"Рейтинг - ") + _result->getString(9) + "\r\n";
+		tmp.push_back(line);
+	}
+
+	if (Debugging)
+	{
+		tmp.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+	}
+	return tmp;
+}
+
+bool DataBase::RegisterPartner(string name, string director, string email, string number, string adress, string inn, string rating, int type, bool Debugging)
+{
+	if (!_con || _con->isClosed())
+	{
+		if (Debugging)
+		{
+			MessageBox(nullptr, L"Нет активного соединения с БД", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	try
+	{
+		_pstmt = _con->prepareStatement("INSERT INTO _partners (_partner_type_id, _title, _director, _email, _phone_number, _adress, _inn, _rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+		_pstmt->setInt(1, type);
+		_pstmt->setString(2, name);
+		_pstmt->setString(3, director);
+		_pstmt->setString(4, email);
+		_pstmt->setString(5, number);
+		_pstmt->setString(6, adress);
+		_pstmt->setString(7, inn);
+		_pstmt->setString(8, rating);
+		_pstmt->executeUpdate();
+		return true;
+	}
+
+	catch (const SQLException& e) {
+		if (Debugging) {
+			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	catch (...) {
+		if (Debugging) {
+			MessageBox(nullptr, L"Неизвестная ошибка при добавлении партнера", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+}
+
+bool DataBase::DeletePartner(int id, bool Debugging)
+{
+	if (!_con || _con->isClosed())
+	{
+		if (Debugging)
+		{
+			MessageBox(nullptr, L"Нет активного соединения с БД", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	try
+	{
+		_pstmt = _con->prepareStatement("DELETE FROM _partners WHERE id = ?;");
+		_pstmt->setInt(1, id);
+		_pstmt->executeUpdate();
+		return true;
+	}
+
+	catch (const SQLException& e) {
+		if (Debugging) {
+			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+		}
+		return false;
+	}
+}

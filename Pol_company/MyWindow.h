@@ -161,7 +161,7 @@ protected:
 	void GetWindowTextAsStringANSI(HWND hWnd, string& output);
 	string WideToANSI(const wchar_t* wideStr);
 	void AppendTextToEdit(HWND hEdit, const wchar_t* text);
-	void CreateOtherWindow(EWindowID id, SColor color = SColor(90, 75, 75)); // Логика для создания нового окна
+	virtual void CreateOtherWindow(EWindowID id, SColor color = SColor(90, 75, 75)); // Логика для создания нового окна
 
 public:
 	MyWindow(HINSTANCE hInstance, EWindowID windowId, SColor color = SColor(0, 0, 0));

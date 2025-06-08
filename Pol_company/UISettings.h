@@ -84,7 +84,7 @@ public:
 protected:
 	virtual void Initialize() override
 	{
-		//_dataBase->SetParentWindow(_hwnd);
+		_dataBase->SetParentWindow(_hwnd);
 		AddFont(16, L"Roboto", FW_BOLD, false, false, FONT_ROBOTO1);
 		AddFont(12, L"Roboto", FW_BOLD, false, false, FONT_ROBOTO2);
 		AddFont(14, L"Roboto", FW_BOLD, false, false, FONT_ROBOTO3);
