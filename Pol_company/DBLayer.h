@@ -11,6 +11,18 @@
 using namespace std;
 using namespace sql;
 
+struct STable
+{
+	int id;
+	std::string tableLine;
+
+	STable()
+	{
+		id = -1;
+		tableLine = "";
+	}
+};
+
 class DataBase {
 
 public:
@@ -47,46 +59,12 @@ public:
 		string fname, string lname, string pname, string email, bool Debugging = false);
 	bool HasAdministrator(bool Debugging = false);
 	bool InLogin(bool Debugging = false);
+	vector<STable> LoadTablePartner(int id = -1, bool Debugging = false);
 	vector<string> LoadTitle(string table, bool Debugging = false);
-	vector<string> LoadPartners(string title = "", bool Debugging = false);
 	bool RegisterPartner(string name, string director, string email,
 		string number, string adress, string inn, string rating, int type, bool Debugging = false);
 	bool DeletePartner(int id, bool Debugging = false);
-	bool UpdateRating(string rating, int id, bool Debugging = false)
-	{
-		if (!_con || _con->isClosed())
-		{
-			if (Debugging)
-			{
-				MessageBox(nullptr, L"Нет активного соединения с БД", L"Ошибка!", MB_ICONERROR);
-			}
-			return false;
-		}
-
-		try
-		{
-			_pstmt = _con->prepareStatement("UPDATE _partners SET _rating = ? WHERE id = ?;");
-			_pstmt->setString(1, rating);
-			_pstmt->setInt(2, id);
-			_pstmt->executeUpdate();
-			return true;
-		}
-
-		catch (const SQLException& e) {
-			if (Debugging) {
-				string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
-				MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
-			}
-			return false;
-		}
-
-		catch (...) {
-			if (Debugging) {
-				MessageBox(nullptr, L"Неизвестная ошибка при добавлении партнера", L"Ошибка!", MB_ICONERROR);
-			}
-			return false;
-		}
-	}
+	bool UpdateRating(string rating, int id, bool Debugging = false);
 
 
 private:
@@ -110,4 +88,5 @@ private:
 	bool ValidateCredentials(const string Login, const string Password, bool Debugging = false);
 	eRole GetRole(string Login, bool Debugging = false);
 	int GetId(string Login, bool Debugging = false);
+	vector<int> LoadTableIndex(bool Debugging = false);
 };

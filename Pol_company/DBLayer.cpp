@@ -161,6 +161,26 @@ int DataBase::GetId(string Login, bool Debugging)
 	return tmp;
 }
 
+vector<int> DataBase::LoadTableIndex(bool Debugging)
+{
+	vector<int> tmp;
+	int value;
+	_pstmt = _con->prepareStatement("SELECT id FROM _partners ORDER BY id;");
+	_result = _pstmt->executeQuery();
+
+	while (_result->next())
+	{
+		value = _result->getInt(1);
+		tmp.push_back(value);
+	}
+
+	if (Debugging)
+	{
+		tmp.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+	}
+	return tmp;
+}
+
 string DataBase::SimpleHash(const string& input)
 {
 	hash<string> hasher;
@@ -259,6 +279,46 @@ bool DataBase::InLogin(bool Debugging)
 	return false;
 }
 
+vector<STable> DataBase::LoadTablePartner(int id, bool Debugging)
+{
+	vector<int> tmpIndex;
+	tmpIndex = LoadTableIndex();
+	vector<STable> tmpTable;
+	STable lTable;
+	string line;
+	if (id == -1)
+		_pstmt = _con->prepareStatement("SELECT _title, _rating FROM _partners ORDER BY id;");
+	else
+	{
+		_pstmt = _con->prepareStatement("SELECT * FROM _partners WHERE id = ? ORDER BY id;");
+		_pstmt->setInt(1, id);
+	}
+	_result = _pstmt->executeQuery();
+
+	for (int i = 0; _result->next(); i++)
+	{
+		if (id == -1)
+			line = _result->getString(1) + WideToUTF8(L"  (Рейтинг - ") + _result->getString(2) + ")";
+		else
+			line = WideToUTF8(L"Название компании - ") + _result->getString(3) + "\r\n" +
+			WideToUTF8(L"Директор - ") + _result->getString(4) + "\r\n" +
+			WideToUTF8(L"@mail - ") + _result->getString(5) + "\r\n" +
+			WideToUTF8(L"Номер телефона - ") + _result->getString(6) + "\r\n" +
+			WideToUTF8(L"Адрес - ") + _result->getString(7) + "\r\n" +
+			WideToUTF8(L"ИНН - ") + _result->getString(8) + "\r\n" +
+			WideToUTF8(L"Рейтинг - ") + _result->getString(9) + "\r\n";
+		lTable.id = tmpIndex[i];
+		lTable.tableLine = line;
+		tmpTable.push_back(lTable);
+	}
+
+	if (Debugging)
+	{
+		tmpTable.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+	}
+	return tmpTable;
+}
+
 vector<string> DataBase::LoadTitle(string table, bool Debugging)
 {
 	vector<string> tmp;
@@ -276,40 +336,40 @@ vector<string> DataBase::LoadTitle(string table, bool Debugging)
 	return tmp;
 }
 
-vector<string> DataBase::LoadPartners(string title, bool Debugging)
-{
-	vector<string> tmp;
-	string line;
-	if (title == "") 
-		_pstmt = _con->prepareStatement("SELECT _title, _rating FROM _partners ORDER BY id;");
-	else 
-	{
-		_pstmt = _con->prepareStatement("SELECT * FROM _partners WHERE id = ? ORDER BY id;");
-		_pstmt->setString(1, title);
-	}
-	_result = _pstmt->executeQuery();
-
-	while (_result->next())
-	{
-		if (title == "")
-			line = _result->getString(1) + WideToUTF8(L"  (Рейтинг - ") + _result->getString(2) + ")";
-		else
-			line = WideToUTF8(L"Название компании - ") + _result->getString(3) + "\r\n" +
-			WideToUTF8(L"Директор - ") + _result->getString(4) + "\r\n" +
-			WideToUTF8(L"@mail - ") + _result->getString(5) + "\r\n" +
-			WideToUTF8(L"Номер телефона - ") + _result->getString(6) + "\r\n" +
-			WideToUTF8(L"Адрес - ") + _result->getString(7) + "\r\n" +
-			WideToUTF8(L"ИНН - ") + _result->getString(8) + "\r\n" +
-			WideToUTF8(L"Рейтинг - ") + _result->getString(9) + "\r\n";
-		tmp.push_back(line);
-	}
-
-	if (Debugging)
-	{
-		tmp.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
-	}
-	return tmp;
-}
+//vector<string> DataBase::LoadPartners(string title, bool Debugging)
+//{
+//	vector<string> tmp;
+//	string line;
+//	if (title == "") 
+//		_pstmt = _con->prepareStatement("SELECT _title, _rating FROM _partners ORDER BY id;");
+//	else 
+//	{
+//		_pstmt = _con->prepareStatement("SELECT * FROM _partners WHERE id = ? ORDER BY id;");
+//		_pstmt->setString(1, title);
+//	}
+//	_result = _pstmt->executeQuery();
+//
+//	while (_result->next())
+//	{
+//		if (title == "")
+//			line = _result->getString(1) + WideToUTF8(L"  (Рейтинг - ") + _result->getString(2) + ")";
+//		else
+//			line = WideToUTF8(L"Название компании - ") + _result->getString(3) + "\r\n" +
+//			WideToUTF8(L"Директор - ") + _result->getString(4) + "\r\n" +
+//			WideToUTF8(L"@mail - ") + _result->getString(5) + "\r\n" +
+//			WideToUTF8(L"Номер телефона - ") + _result->getString(6) + "\r\n" +
+//			WideToUTF8(L"Адрес - ") + _result->getString(7) + "\r\n" +
+//			WideToUTF8(L"ИНН - ") + _result->getString(8) + "\r\n" +
+//			WideToUTF8(L"Рейтинг - ") + _result->getString(9) + "\r\n";
+//		tmp.push_back(line);
+//	}
+//
+//	if (Debugging)
+//	{
+//		tmp.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+//	}
+//	return tmp;
+//}
 
 bool DataBase::RegisterPartner(string name, string director, string email, string number, string adress, string inn, string rating, int type, bool Debugging)
 {
@@ -376,6 +436,42 @@ bool DataBase::DeletePartner(int id, bool Debugging)
 		if (Debugging) {
 			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
 			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+		}
+		return false;
+	}
+}
+
+bool DataBase::UpdateRating(string rating, int id, bool Debugging)
+{
+	if (!_con || _con->isClosed())
+	{
+		if (Debugging)
+		{
+			MessageBox(nullptr, L"Нет активного соединения с БД", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	try
+	{
+		_pstmt = _con->prepareStatement("UPDATE _partners SET _rating = ? WHERE id = ?;");
+		_pstmt->setString(1, rating);
+		_pstmt->setInt(2, id);
+		_pstmt->executeUpdate();
+		return true;
+	}
+
+	catch (const SQLException& e) {
+		if (Debugging) {
+			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	catch (...) {
+		if (Debugging) {
+			MessageBox(nullptr, L"Неизвестная ошибка при добавлении партнера", L"Ошибка!", MB_ICONERROR);
 		}
 		return false;
 	}

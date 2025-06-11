@@ -30,12 +30,12 @@ private:
 
 	const int COLUMNS = 1;
 	ScrollGridButtons* _scrollGrid = nullptr;
-	vector<string> _partners;
+	vector<STable> _partners;
 	int _idPartnerInfo = -1;
 
 	void UpdateShowInfoPartners()
 	{
-		_partners = _dataBase->LoadPartners();
+		_partners = _dataBase->LoadTablePartner();
 		if (_partners.empty()) return;
 
 		for (int i = 0; i < _partners.size(); i++)
@@ -46,7 +46,7 @@ private:
 
 			MyButton* hButton = MyButton::Create().
 				parent(_hwnd).
-				text(StringToWide(_partners[i])).
+				text(StringToWide(_partners[i].tableLine)).
 				coordSize(0, 0, 200, 100).
 				id(1000+i).
 				backGroundColor(SColor::AccentuationColor()).
@@ -148,7 +148,7 @@ protected:
 			// Обработка кнопок в скролле
 			if (buttonId >= 1000 && buttonId < 2000) {
 				int buttonIndex = buttonId - 1000;
-				_idPartnerInfo = buttonIndex+1;
+				_idPartnerInfo = _partners[buttonIndex].id;
 				CreateOtherWindow(EUIPartnerInfo, SColor::AdditionalColor());
 			}
 			break;

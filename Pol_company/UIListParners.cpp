@@ -9,7 +9,7 @@ void UIListPartner::CreateOtherWindow(EWindowID id, SColor color)
 	UIPartnerInfo* lUIPartnerInfo = dynamic_cast<UIPartnerInfo*>(nextWindow);
 	if (lUIPartnerInfo)
 	{
-		lUIPartnerInfo->SetId(_idPartnerInfo);
+		lUIPartnerInfo->SetIndexItem(_idPartnerInfo);
 		
 		if (_otherWindow) {
 			MyWindow* old = _otherWindow;

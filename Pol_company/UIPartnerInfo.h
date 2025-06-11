@@ -25,23 +25,25 @@ private:
 		FONT_ROBOTO3 = 301
 	};
 
-	int _currentId = -1;
-	vector<string> _info;
+	STable _currentItem;
 
 	void LoadPartnerInfo()
 	{
-		_info = _dataBase->LoadPartners(std::to_string(_currentId));
-		if(_info.empty())
+		vector<STable> tmp = _dataBase->LoadTablePartner(_currentItem.id);
+		if (tmp.size() <= 0)
 			UpdateControlText(EDIT_INFO, "Ошибка загрузки");
 		else
-			UpdateControlText(EDIT_INFO, _info[0].c_str());
+		{
+			_currentItem.tableLine = tmp[0].tableLine;
+			UpdateControlText(EDIT_INFO, _currentItem.tableLine.c_str());
+		}
 	}
 
 	void DeletePartner() 
 	{
 		int result = MessageBox(nullptr, L"Удалить партнера?", L"Удаление партнера", MB_YESNO | MB_ICONQUESTION);
-		if (result == IDYES && _currentId != -1)
-			if(_dataBase->DeletePartner(_currentId, true))
+		if (result == IDYES && _currentItem.id != -1)
+			if(_dataBase->DeletePartner(_currentItem.id, true))
 				CreateOtherWindow(EUIListPartner, SColor::BaseColor());
 	}
 
@@ -49,12 +51,12 @@ private:
 	{
 		string rating;
 		GetWindowTextAsString(_widgets[EDIT_RAITING], rating);
-		if (rating.empty() && _currentId != -1)
+		if (rating.empty() && _currentItem.id != -1)
 		{
 			MessageBox(nullptr, L"Заполните все поля", L"Ошибка!", MB_ICONERROR);
 			return;
 		}
-		_dataBase->UpdateRating(rating, _currentId);
+		_dataBase->UpdateRating(rating, _currentItem.id);
 		UpdateWidgetSettings();
 	}
 
@@ -71,9 +73,9 @@ public:
 		Initialize();
 	}
 
-	void SetId(int id)
+	void SetIndexItem(int index)
 	{
-		_currentId = id;
+		_currentItem.id = index;
 	}
 
 protected:
