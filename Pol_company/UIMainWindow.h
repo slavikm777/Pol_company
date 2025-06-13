@@ -130,14 +130,14 @@ protected:
 		CreateCustomButton(_hwnd, L"Авторизация", 800, 50, 180, 40, BTN_LOGIN, SColor::AccentuationColor(), SColor(), _fonts[FONT_ROBOTO2]);
 		CreateCustomButton(_hwnd, L"Выйти", 800, 50, 180, 40, BTN_LOGOUT, SColor(255, 0, 130), SColor(), _fonts[FONT_ROBOTO2]);
 		CreateCustomButton(_hwnd, L"Авторизация пользователей", 370, 150, 320, 40, BTN_USERS, SColor::AccentuationColor(), SColor(), _fonts[FONT_ROBOTO2], false);
-		CreateCustomButton(_hwnd, L"Сделать заявку", 370, 150, 320, 40, BTN_CREATE_ORDER, SColor::AccentuationColor(), SColor(), _fonts[FONT_ROBOTO2], false);
+		CreateCustomButton(_hwnd, L"Заявки", 370, 150, 320, 40, BTN_CREATE_ORDER, SColor::AccentuationColor(), SColor(), _fonts[FONT_ROBOTO2], false);
 		CreateCustomButton(_hwnd, L"Партнеры", 370, 200, 320, 40, BTN_PARTNERS, SColor::AccentuationColor(), SColor(), _fonts[FONT_ROBOTO2], false);
 
 		SetWidgetPermissions(BTN_STATUS, WidgetState::Enabled, { eRole::Disabled });
 		SetWidgetPermissions(BTN_LOGIN, WidgetState::Visible, { eRole::ConnectedDB });
 		SetWidgetPermissions(BTN_LOGOUT, WidgetState::Visible, { eRole::Administrator, eRole::Analitic, eRole::Manager, eRole::Master });
 		SetWidgetPermissions(BTN_USERS, WidgetState::Visible, { eRole::Administrator });
-		SetWidgetPermissions(BTN_CREATE_ORDER, WidgetState::Visible, { eRole::Manager });
+		SetWidgetPermissions(BTN_CREATE_ORDER, WidgetState::Visible, { eRole::Manager, eRole::Master });
 		SetWidgetPermissions(BTN_PARTNERS, WidgetState::Visible, { eRole::Manager });
 	}
 
@@ -171,6 +171,9 @@ protected:
 			break;
 		case BTN_PARTNERS:
 			CreateOtherWindow(EUIListPartner, SColor::BaseColor());
+			break;
+		case BTN_CREATE_ORDER:
+			CreateOtherWindow(EUIListOrder, SColor::BaseColor());
 			break;
 		}
 		UpdateWidgetsState();

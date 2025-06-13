@@ -34,7 +34,7 @@ private:
 		FONT_ROBOTO4
 	};
 
-	vector<string> _roles;
+	vector<STable> _partnerType;
 
 	eRole BoxToRole()
 	{
@@ -52,7 +52,8 @@ private:
 	void Register()
 	{
 		string name, director, adress, number, email, rating, discount, inn;
-		int typePartner = SendMessage(_widgets[COMBOBOX1], CB_GETCURSEL, 0, 0) + 1;
+		int indexPartner = SendMessage(_widgets[COMBOBOX1], CB_GETCURSEL, 0, 0);
+		int id_partner = _partnerType[indexPartner].id;
 		GetWindowTextAsString(_widgets[EDIT_NAME], name);
 		GetWindowTextAsString(_widgets[EDIT_DIRECTOR], director);
 		GetWindowTextAsString(_widgets[EDIT_EMAIL], email);
@@ -60,14 +61,14 @@ private:
 		GetWindowTextAsString(_widgets[EDIT_ADRES], adress);
 		GetWindowTextAsString(_widgets[EDIT_INN], inn);
 		GetWindowTextAsString(_widgets[EDIT_RATING], rating);
-		//GetWindowTextAsString(_widgets[EDIT_DISCOUNT], discount);
+
 		if (name.empty() || adress.empty() || director.empty() || number.empty() || email.empty() || rating.empty())
 		{
 			MessageBox(nullptr, L"Заполните все поля", L"Ошибка!", MB_ICONERROR);
 			return;
 		}
 
-		if(_dataBase->RegisterPartner(name, director, email, number, adress, inn, rating, typePartner, true))
+		if(_dataBase->RegisterPartner(name, director, email, number, adress, inn, rating, id_partner, true))
 		{
 			MessageBoxW(_hwnd, L"Партнер зарегестрирован!", L"Инфо", MB_OK);
 			CreateOtherWindow(EUIListPartner, SColor::AdditionalColor());
@@ -142,9 +143,9 @@ protected:
 		//UpdateControlText(EDIT_PASSWORD1, "");
 		//UpdateControlText(EDIT_PASSWORD2, "");
 		// Добавление элементов в комбобокс
-		_roles = _dataBase->LoadTitle("_partner_type");
-		for (int i = 0; i < _roles.size(); i++)
-			SendMessage(_widgets[COMBOBOX1], CB_INSERTSTRING, i, (LPARAM)StringToWide(_roles[i]).c_str());
+		_partnerType = _dataBase->LoadTableTitle("_partner_type");
+		for (int i = 0; i < _partnerType.size(); i++)
+			SendMessage(_widgets[COMBOBOX1], CB_INSERTSTRING, i, (LPARAM)StringToWide(_partnerType[i].tableLine).c_str());
 		SendMessage(_widgets[COMBOBOX1], CB_SETCURSEL, 0, 0);
 	}
 
@@ -153,7 +154,7 @@ protected:
 		switch (buttonId)
 		{
 		case BTN_BACK:
-			CreateOtherWindow(EUIMainWindow, SColor::AdditionalColor());
+			CreateOtherWindow(EUIListPartner, SColor::BaseColor());
 			break;
 		case BTN_REGISTER:
 			Register();

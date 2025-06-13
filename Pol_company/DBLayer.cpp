@@ -1,4 +1,5 @@
 #include "DBLayer.h"
+#include <string>
 
 DataBase* DataBase::_instance_ptr_db = nullptr;
 
@@ -144,16 +145,20 @@ eRole DataBase::GetRole(string Login, bool Debugging)
 	}
 }
 
-int DataBase::GetId(string Login, bool Debugging)
+int DataBase::GetIdUser(string Login, bool Debugging)
 {
 	int tmp = -1;
-	_pstmt = _con->prepareStatement("SELECT id FROM _employees WHERE _login = ?;");
-	_pstmt->setString(1, Login);
-	_result = _pstmt->executeQuery();
-	while (_result->next())
+	if(_settings->_userSettings.inLogin)
 	{
-		tmp = _result->getInt(1);
+		_pstmt = _con->prepareStatement("SELECT id FROM _employees WHERE _login = ?;");
+		_pstmt->setString(1, Login);
+		_result = _pstmt->executeQuery();
+		while (_result->next())
+		{
+			tmp = _result->getInt(1);
+		}
 	}
+	
 	if (Debugging)
 	{
 		tmp != -1 ? DebugMessage("ID получен", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки ID из таблицы");
@@ -161,11 +166,37 @@ int DataBase::GetId(string Login, bool Debugging)
 	return tmp;
 }
 
-vector<int> DataBase::LoadTableIndex(bool Debugging)
+bool DataBase::DeleteOrder(int id, bool Debugging)
+{
+	int status = GetOrderStatus(id);
+	if (status == 1 || status == 2)
+	{
+		try
+		{
+			_pstmt = _con->prepareStatement("DELETE FROM _orders WHERE id = ?;");
+			_pstmt->setInt(1, id);
+			_pstmt->executeUpdate();
+			return true;
+		}
+
+		catch (const SQLException& e) {
+			if (Debugging) {
+				string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+				MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка удаления", MB_ICONERROR);
+			}
+			return false;
+		}
+	}
+	else
+		MessageBoxA(nullptr, "Статус не позволяет удалить заявку", "Ошибка удаления", MB_ICONERROR);
+	return false;
+}
+
+vector<int> DataBase::LoadTableIndex(string Table,bool Debugging)
 {
 	vector<int> tmp;
 	int value;
-	_pstmt = _con->prepareStatement("SELECT id FROM _partners ORDER BY id;");
+	_pstmt = _con->prepareStatement("SELECT id FROM " + Table + " ORDER BY id;");
 	_result = _pstmt->executeQuery();
 
 	while (_result->next())
@@ -282,7 +313,7 @@ bool DataBase::InLogin(bool Debugging)
 vector<STable> DataBase::LoadTablePartner(int id, bool Debugging)
 {
 	vector<int> tmpIndex;
-	tmpIndex = LoadTableIndex();
+	tmpIndex = LoadTableIndex("_partners");
 	vector<STable> tmpTable;
 	STable lTable;
 	string line;
@@ -335,41 +366,6 @@ vector<string> DataBase::LoadTitle(string table, bool Debugging)
 	}
 	return tmp;
 }
-
-//vector<string> DataBase::LoadPartners(string title, bool Debugging)
-//{
-//	vector<string> tmp;
-//	string line;
-//	if (title == "") 
-//		_pstmt = _con->prepareStatement("SELECT _title, _rating FROM _partners ORDER BY id;");
-//	else 
-//	{
-//		_pstmt = _con->prepareStatement("SELECT * FROM _partners WHERE id = ? ORDER BY id;");
-//		_pstmt->setString(1, title);
-//	}
-//	_result = _pstmt->executeQuery();
-//
-//	while (_result->next())
-//	{
-//		if (title == "")
-//			line = _result->getString(1) + WideToUTF8(L"  (Рейтинг - ") + _result->getString(2) + ")";
-//		else
-//			line = WideToUTF8(L"Название компании - ") + _result->getString(3) + "\r\n" +
-//			WideToUTF8(L"Директор - ") + _result->getString(4) + "\r\n" +
-//			WideToUTF8(L"@mail - ") + _result->getString(5) + "\r\n" +
-//			WideToUTF8(L"Номер телефона - ") + _result->getString(6) + "\r\n" +
-//			WideToUTF8(L"Адрес - ") + _result->getString(7) + "\r\n" +
-//			WideToUTF8(L"ИНН - ") + _result->getString(8) + "\r\n" +
-//			WideToUTF8(L"Рейтинг - ") + _result->getString(9) + "\r\n";
-//		tmp.push_back(line);
-//	}
-//
-//	if (Debugging)
-//	{
-//		tmp.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
-//	}
-//	return tmp;
-//}
 
 bool DataBase::RegisterPartner(string name, string director, string email, string number, string adress, string inn, string rating, int type, bool Debugging)
 {
@@ -435,7 +431,7 @@ bool DataBase::DeletePartner(int id, bool Debugging)
 	catch (const SQLException& e) {
 		if (Debugging) {
 			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
-			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка удаления", MB_ICONERROR);
 		}
 		return false;
 	}
@@ -464,6 +460,144 @@ bool DataBase::UpdateRating(string rating, int id, bool Debugging)
 	catch (const SQLException& e) {
 		if (Debugging) {
 			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	catch (...) {
+		if (Debugging) {
+			MessageBox(nullptr, L"Неизвестная ошибка при добавлении партнера", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+}
+
+vector<STable> DataBase::LoadTableOrder(int id, bool Debugging)
+{
+	vector<int> tmpIndex;
+	tmpIndex = LoadTableIndex("_orders");
+	vector<STable> tmpTable;
+	STable lTable;
+	string line;
+	if (id == -1)
+		_pstmt = _con->prepareStatement("SELECT p._title FROM _orders o INNER JOIN _partners p ON p.id = o._partners_id ORDER BY o.id;");
+	else
+	{
+		_pstmt = _con->prepareStatement("SELECT o.id, p._title, e._fio, pr._title, s._title, o._date_creation  FROM _orders o "
+		"INNER JOIN _partners p ON p.id = o._partners_id "
+		"INNER JOIN _employees e ON e.id = o._manager_id "
+		"INNER JOIN _product pr ON pr.id = o._product_id "
+		"INNER JOIN _status s ON s.id = o._status_id "
+		"WHERE o.id = ?;");
+		_pstmt->setInt(1, id);
+	}
+	_result = _pstmt->executeQuery();
+
+	for (int i = 0; _result->next(); i++)
+	{
+		if (id == -1)
+			line = _result->getString(1);
+		else
+			line = WideToUTF8(L"Номер заявки - ") + _result->getString(1) + "\r\n" +
+			WideToUTF8(L"Заказчик - ") + _result->getString(2) + "\r\n" +
+			WideToUTF8(L"Оформил заказ - ") + _result->getString(3) + "\r\n" +
+			WideToUTF8(L"Продукция - ") + _result->getString(4) + "\r\n" +
+			WideToUTF8(L"Статус - ") + _result->getString(5) + "\r\n" +
+			WideToUTF8(L"Дата регистрации заявки - ") + _result->getString(6) + "\r\n";
+		lTable.id = tmpIndex[i];
+		lTable.tableLine = line;
+		tmpTable.push_back(lTable);
+	}
+
+	if (Debugging)
+	{
+		tmpTable.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+	}
+	return tmpTable;
+}
+
+vector<STable> DataBase::LoadTableTitle(string table, bool Debugging)
+{
+	vector<int> tmpIndex;
+	tmpIndex = LoadTableIndex(table);
+	vector<STable> tmpTable;
+	STable lTable;
+	string line;
+
+	_pstmt = _con->prepareStatement("SELECT _title FROM " + table + " ORDER BY id;");
+	_result = _pstmt->executeQuery();
+
+	for (int i = 0; _result->next(); i++)
+	{
+		line = _result->getString(1);
+
+		lTable.id = tmpIndex[i];
+		lTable.tableLine = line;
+		tmpTable.push_back(lTable);
+	}
+
+	if (Debugging)
+	{
+		tmpTable.size() > 0 ? DebugMessage("Успешно", "Таблица загружена") : DebugMessage("Ошибка", "Ошибка загрузки таблицы");
+	}
+	return tmpTable;
+}
+
+bool DataBase::UpdateStatusOrder(int idStatus, int id, bool Debugging)
+{
+	try
+	{
+		_pstmt = _con->prepareStatement("UPDATE _orders SET _status_id = ? WHERE id = ?;");
+		_pstmt->setInt(1, idStatus);
+		_pstmt->setInt(2, id);
+		_pstmt->executeUpdate();
+		return true;
+	}
+
+	catch (const SQLException& e) {
+		if (Debugging) {
+			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка изменения", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	catch (...) {
+		if (Debugging) {
+			MessageBox(nullptr, L"Неизвестная ошибка при изменении статуса", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+}
+
+bool DataBase::CreateOrder(int partner_id, int manager_id, int product_id, int status_id, string total_amount, bool Debugging)
+{
+	if (!_con || _con->isClosed())
+	{
+		if (Debugging)
+		{
+			MessageBox(nullptr, L"Нет активного соединения с БД", L"Ошибка!", MB_ICONERROR);
+		}
+		return false;
+	}
+
+	try
+	{
+		_pstmt = _con->prepareStatement("INSERT INTO _orders (_partners_id, _manager_id, _product_id,_status_id, _date_creation, _total_amount) VALUES (?, ?, ?, ?, now(), ?);");
+		_pstmt->setInt(1, partner_id);
+		_pstmt->setInt(2, manager_id);
+		_pstmt->setInt(3, product_id);
+		_pstmt->setInt(4, status_id);
+		_pstmt->setString(5, total_amount);
+		_pstmt->executeUpdate();
+		return true;
+	}
+
+	catch (const SQLException& e) {
+		if (Debugging) {
+			string errorMsg = "Ошибка SQL [" + std::to_string(e.getErrorCode()) + "]: " + e.what();
+
 			MessageBoxA(nullptr, errorMsg.c_str(), "Ошибка добавления", MB_ICONERROR);
 		}
 		return false;

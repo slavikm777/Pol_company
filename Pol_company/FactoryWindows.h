@@ -7,6 +7,9 @@
 #include "UIRegisterPartner.h"
 #include "UIListParners.h"
 #include "UIPartnerInfo.h"
+#include "UIListOrders.h"
+#include "UIOrderInfo.h"
+#include "UINewOrder.h"
 
 class IFactoryWindow {
 public:
@@ -27,7 +30,9 @@ public:
 		case EUIRegisterPartner: return new UIRegisterPartner(hInstance, id, color);
 		case EUIListPartner: return new UIListPartner(hInstance, id, color);
 		case EUIPartnerInfo: return new UIPartnerInfo(hInstance, id, color);
-		//case EUIAddService: return new UIAddService(hInstance, id, color);
+		case EUIListOrder: return new UIListOrder(hInstance, id, color);
+		case EUIOrderInfo: return new UIOrderInfo(hInstance, id, color);
+		case EUINewOrder: return new UINewOrder(hInstance, id, color);
 		default: return nullptr;
 		}
 	}

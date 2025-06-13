@@ -45,7 +45,10 @@ enum EWindowID
 	EUIChangePassword, // Окно смены пароля
 	EUIRegisterPartner, //Окно регистрации партнеров
 	EUIListPartner, // Окно списка партнеров
-	EUIPartnerInfo // Окно информации партнера
+	EUIPartnerInfo, // Окно информации партнера
+	EUIListOrder, // Окно списка заказов
+	EUIOrderInfo, // Окно информации заказа
+	EUINewOrder // Окно создания заявки
 };
 
 enum eRole

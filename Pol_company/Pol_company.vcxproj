@@ -135,6 +135,7 @@
     <ClCompile Include="MyWindow.cpp" />
     <ClCompile Include="Pol_company.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="UIListOrders.cpp" />
     <ClCompile Include="UIListParners.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -145,9 +146,12 @@
     <ClInclude Include="MyGridButton.h" />
     <ClInclude Include="MyWindow.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="UIListOrders.h" />
     <ClInclude Include="UIListParners.h" />
     <ClInclude Include="UILogin.h" />
     <ClInclude Include="UIMainWindow.h" />
+    <ClInclude Include="UINewOrder.h" />
+    <ClInclude Include="UIOrderInfo.h" />
     <ClInclude Include="UIPartnerInfo.h" />
     <ClInclude Include="UIRegister.h" />
     <ClInclude Include="UIRegisterPartner.h" />

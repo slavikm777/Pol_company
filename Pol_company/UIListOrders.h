@@ -3,14 +3,14 @@
 #include "MyGridButton.h"
 
 //Класс окна товаров
-class UIListPartner : public MyWindow
+class UIListOrder : public MyWindow
 {
 
 private:
 	enum EWidgetsID { // Идентификаторы элементов
 		T_1 = 1,
 		BTN_BACK,
-		BTN_NEWPARTNER,
+		BTN_NEWORDER,
 		GRID_LIST
 	};
 
@@ -22,15 +22,15 @@ private:
 
 	const int COLUMNS = 1;
 	ScrollGridButtons* _scrollGrid = nullptr;
-	vector<STable> _partners;
-	int _idPartnerInfo = -1;
+	vector<STable> _orders;
+	int _idOrderInfo = -1;
 
 	void UpdateShowInfoPartners()
 	{
-		_partners = _dataBase->LoadTablePartner();
-		if (_partners.empty()) return;
+		_orders = _dataBase->LoadTableOrder();
+		if (_orders.empty()) return;
 
-		for (int i = 0; i < _partners.size(); i++)
+		for (int i = 0; i < _orders.size(); i++)
 		{
 			// Вычисляем позицию в матрице
 			int row = i / COLUMNS;    // Номер строки
@@ -38,9 +38,9 @@ private:
 
 			MyButton* hButton = MyButton::Create().
 				parent(_hwnd).
-				text(StringToWide(_partners[i].tableLine)).
+				text(StringToWide(_orders[i].tableLine)).
 				coordSize(0, 0, 200, 100).
-				id(1000+i).
+				id(1000 + i).
 				backGroundColor(SColor::AccentuationColor()).
 				textColor(SColor()).
 				font(_fonts[FONT_ROBOTO1]).
@@ -52,15 +52,15 @@ private:
 	}
 
 public:
-	UIListPartner(HINSTANCE hInstance, EWindowID prevWindow) : MyWindow(hInstance, prevWindow)
+	UIListOrder(HINSTANCE hInstance, EWindowID prevWindow) : MyWindow(hInstance, prevWindow)
 	{
-		CreateClass<UIListPartner>(hInstance, L"ListPartner", 1024, 640);
+		CreateClass<UIListOrder>(hInstance, L"ListOrder", 1024, 640);
 		Initialize();
 	}
 
-	UIListPartner(HINSTANCE hInstance, EWindowID prevWindow, SColor color) : MyWindow(hInstance, prevWindow, color)
+	UIListOrder(HINSTANCE hInstance, EWindowID prevWindow, SColor color) : MyWindow(hInstance, prevWindow, color)
 	{
-		CreateClass<UIListPartner>(hInstance, L"ListPartner", 1024, 640);
+		CreateClass<UIListOrder>(hInstance, L"ListOrder", 1024, 640);
 		Initialize();
 	}
 
@@ -99,8 +99,11 @@ protected:
 
 	virtual void CreateWidgets()
 	{
-		CreateControl(L"BUTTON", L"Новый партнер", 560, 500, 200, 40, BTN_NEWPARTNER, WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, _fonts[FONT_ROBOTO2]);
+		CreateControl(L"BUTTON", L"Новая заявка", 560, 500, 200, 40, BTN_NEWORDER, WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, _fonts[FONT_ROBOTO2]);
 		CreateControl(L"BUTTON", L"Назад", 300, 500, 200, 40, BTN_BACK, WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, _fonts[FONT_ROBOTO2]);
+
+		SetWidgetPermissions(BTN_NEWORDER, WidgetState::Enabled, { eRole::Manager });
+		UpdateWidgetsState();
 
 		// Создаем скролл с гридом кнопок
 		_scrollGrid = new ScrollGridButtons(_hwnd, 950, 60, 20, 400, 850, 50, COLUMNS, 10);
@@ -120,8 +123,8 @@ protected:
 	{
 		switch (buttonId)
 		{
-		case BTN_NEWPARTNER:
-			CreateOtherWindow(EUIRegisterPartner, SColor::AdditionalColor());
+		case BTN_NEWORDER:
+			CreateOtherWindow(EUINewOrder, SColor::AdditionalColor());
 			break;
 		case BTN_BACK:
 			CreateOtherWindow(EUIMainWindow, SColor::BaseColor());
@@ -130,8 +133,8 @@ protected:
 			// Обработка кнопок в скролле
 			if (buttonId >= 1000 && buttonId < 2000) {
 				int buttonIndex = buttonId - 1000;
-				_idPartnerInfo = _partners[buttonIndex].id;
-				CreateOtherWindow(EUIPartnerInfo, SColor::AdditionalColor());
+				_idOrderInfo = _orders[buttonIndex].id;
+				CreateOtherWindow(EUIOrderInfo, SColor::AdditionalColor());
 			}
 			break;
 		}

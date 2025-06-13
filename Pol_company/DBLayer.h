@@ -65,7 +65,12 @@ public:
 		string number, string adress, string inn, string rating, int type, bool Debugging = false);
 	bool DeletePartner(int id, bool Debugging = false);
 	bool UpdateRating(string rating, int id, bool Debugging = false);
-
+	vector<STable> LoadTableOrder(int id = -1, bool Debugging = false);
+	vector<STable> LoadTableTitle(string table, bool Debugging = false);
+	bool UpdateStatusOrder(int idStatus, int id, bool Debugging = false);
+	bool CreateOrder(int partner_id, int manager_id, int product_id, int status_id, string total_amount, bool Debugging = false);
+	int GetIdUser(string Login, bool Debugging = false);
+	bool DeleteOrder(int id, bool Debugging = false);
 
 private:
 	static DataBase* _instance_ptr_db;
@@ -87,6 +92,18 @@ private:
 	string GetPassword(string Login, bool Debugging = false);
 	bool ValidateCredentials(const string Login, const string Password, bool Debugging = false);
 	eRole GetRole(string Login, bool Debugging = false);
-	int GetId(string Login, bool Debugging = false);
-	vector<int> LoadTableIndex(bool Debugging = false);
+	vector<int> LoadTableIndex(string table, bool Debugging = false);
+	int GetOrderStatus(int id) 
+	{
+		int Out;
+		_pstmt = _con->prepareStatement("SELECT s.id FROM _orders o INNER JOIN _status s ON s.id = o._status_id WHERE o.id = ?;");
+		_pstmt->setInt(1, id);
+		_result = _pstmt->executeQuery();
+
+		for (int i = 0; _result->next(); i++)
+		{
+			Out = _result->getInt(1);
+		}
+		return Out;
+	}
 };
